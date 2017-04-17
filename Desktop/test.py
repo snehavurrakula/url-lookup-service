@@ -1,33 +1,18 @@
 import requests
-import socket
+from urlparse import urlsplit
 import sqlite3
-from flask import Flask, request, jsonify
 
-app = Flask(__name__)
+url = "GET /SQL_Injection/1/{hostname_and_port}/{original_path_and_query_string}"
+input = url.split('/')
 
-@app.route('/<content>', methods = ['GET'])
-def checkfunction(content):
-	con = sqlite3.connect('mydata.db')
-	cur = con.cursor()
-	cur.execute("select boolean_rep from testtable where url_name =?", (content,))
-	if cur.fetchone()[0] == "true":
-		return("Malware found, not safe to access")
-	else:
-		return("Safe to access")
+con = sqlite3.connect('mydb.db')
 
-@app.errorhandler(404)
-def not_found(error=None):
-    message = {
-            'status': 404,
-            'message': 'Not Found: ' + request.url,
-    }
-    resp = jsonify(message)
-    resp.status_code = 404
+cur = con.cursor()
+cur.execute("select text from blacklist where text=?", (input[1],))
+data = cur.fetchall()
 
-    return resp
-
-if __name__ == '__main__':
-	port =8080
-	app.debug = "true"
-	app.run(host = '0.0.0.0', port=port)
+if not data:
+        print ('No malware', data)
+else:
+        print ('Malware found')
 																																																																																																																																																													
